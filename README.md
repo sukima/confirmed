@@ -123,7 +123,7 @@ new Confirmer(function (resolver) {
     resolver.cancel();
   }
 })
-  .onConfirmed(function () { console.log('Ok! let's crack on!'); })
+  .onConfirmed(function () { console.log('Ok! let\'s crack on!'); })
   .onCancelled(function () { console.log('Maybe next time then?'); })
   .onDone(function () { console.log('Confirm completed') });
 ```
@@ -138,7 +138,7 @@ new Confirmer(function (resolver) {
   $('#modal-dialog button.no').one('click', resolver.cancel);
   $('#modal-dialog').show();
 })
-  .onConfirmed(function () { console.log('Ok! let's crack on!'); })
+  .onConfirmed(function () { console.log('Ok! let\'s crack on!'); })
   .onCancelled(function () { console.log('Maybe next time then?'); })
   .onDone(function () {
     $('#modal-dialog button').off('click');
