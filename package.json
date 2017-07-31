@@ -1,6 +1,6 @@
 {
   "name": "confirmed",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Framework agnostic asynchronous confirmation module",
   "license": "MIT",
   "main": "index.js",
@@ -12,7 +12,6 @@
   "bugs": {
     "url": "http://github.com/sukima/confirmed/issues"
   },
-  "license": "MIT",
   "author": {
     "name": "Devin Weaver",
     "email": "suki@tritarget.org",
