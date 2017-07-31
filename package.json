@@ -1,0 +1,38 @@
+{
+  "name": "confirmed",
+  "version": "0.0.0",
+  "description": "Framework agnostic asynchronous confirmation module",
+  "license": "MIT",
+  "main": "index.js",
+  "homepage": "https://github.com/sukima/confirmed",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/sukima/confirmed.git"
+  },
+  "bugs": {
+    "url": "http://github.com/sukima/confirmed/issues"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Devin Weaver",
+    "email": "suki@tritarget.org",
+    "url": "https://tritarget.org/"
+  },
+  "scripts": {
+    "clean": "rm -r dist",
+    "build": "babel src -d dist",
+    "test": "npm run build && mocha",
+    "prepublish": "npm run build"
+  },
+  "files": [
+    "dist",
+    "yarn.lock"
+  ],
+  "devDependencies": {
+    "babel-cli": "^6.24.1",
+    "babel-plugin-transform-es2015-modules-umd": "^6.24.1",
+    "babel-preset-es2015": "^6.24.1",
+    "mocha": "^3.4.2",
+    "sinon": "^2.4.1"
+  }
+}
