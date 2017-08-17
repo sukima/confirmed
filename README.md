@@ -68,7 +68,7 @@ new Confirmer(function (resolver) { … })
 
 The `then()` function will be passed the underlying data object:
 
-```
+```js
 new Confirmer(function (resolver) { … })
   .then(function (result) {
     console.log(result.reason);
