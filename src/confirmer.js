@@ -44,6 +44,10 @@ export default class Confirmer {
     return this;
   }
 
+  onCanceled(fn) {
+    return this.onCancelled(fn);
+  }
+
   onDone(fn) {
     this._promise = this._promise.then(
       result => {
