@@ -54,6 +54,9 @@ new Confirmer(function (resolver) {
   resolver.cancel();
   // Reject with an Error
   resolver.error(new Error());
+  // Register a disposer function to clean up resources
+  // Same as onDone but in the initializer function closure
+  resolver.dispose(function () { … });
 })
 ```
 
@@ -194,4 +197,34 @@ new Confirmer(function (resolver) {
   $('#modal-dialog button').off('click');
   $('#modal-dialog').hide();
 });
+```
+
+## Vanilla DOM Events (using the dispose function)
+
+Because vanilla DOM events are a common area for memory leaks the expectation
+is that when you `addEventListener` you have a corresponding
+`removeEventListener`. Unfortunately this requires a reference to the event
+handler function. This is typically accomplished using named functions.
+However, that also adds scope problems and more boilerplate. Some attempt to
+use `arguments.callee`, some use `var _this = this`, and some use outer scoped
+variables. This example takes advantage of the `dispose` API to make disposing
+resources in a cleaner (read prettier) way.
+
+```js
+let dialog = document.getElementById('modal-dialog');
+let buttonYes = dialog.querySelector('button.yes');
+let buttonNo = dialog.querySelector('button.no');
+
+new Confirmer(function (resolver) {
+  buttonYes.addEventListener('click', resolver.confirm);
+  buttonNo.addEventListener('click', resolver.cancel);
+  resolver.dispose(function () {
+    buttonYes.removeEventListener('click', resolver.confirm);
+    buttonNo.removeEventListener('click', resolver.cancel);
+  });
+  dialog.style.display = 'block';
+})
+  .onConfirmed(function () { console.log('Ok! let\'s crack on!'); })
+  .onCancelled(function () { console.log('Maybe next time then?'); })
+  .onDone(function () { dialog.style.display = 'none'; });
 ```

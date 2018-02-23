@@ -4,14 +4,19 @@ export const CANCELLED = 'cancelled';
 
 export default class Confirmer {
   constructor(initFn) {
+    let disposer = () => {};
     this._promise = new Promise((resolve, reject) => {
       initFn({
         error: reject,
         reject: value => resolve({reason: REJECTED, value}),
         confirm: value => resolve({reason: CONFIRMED, value}),
-        cancel: value => resolve({reason: CANCELLED, value})
+        cancel: value => resolve({reason: CANCELLED, value}),
+        dispose: fn => disposer = fn
       });
-    });
+    }).then(
+      result => Promise.resolve(disposer()).then(() => result),
+      error => Promise.resolve(disposer()).then(() => { throw error; })
+    );
   }
 
   onConfirmed(fn) {

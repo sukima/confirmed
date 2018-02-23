@@ -1,6 +1,9 @@
 const sinon = require('sinon');
 const Confirmer = require('../dist/confirmer').default;
 
+const TEST_ERROR = sinon.match.instanceOf(Error)
+  .and(sinon.match.has('message', 'Test Error'));
+
 describe('Confirmer', function () {
   beforeEach(function () {
     this.onCancelledStub = sinon.stub().returnsArg(0);
@@ -104,6 +107,33 @@ describe('Confirmer', function () {
           .onRejected(this.onRejectedStub);
         sinon.assert.calledWith(onRejectedMutateStub, 'test-payload');
         sinon.assert.calledWith(this.onRejectedStub, 'mutated-payload');
+      });
+    });
+  });
+
+  describe('using the dispose function', function () {
+    describe('when confirmer resolves', function () {
+      it('facilitates disposing of resources', async function () {
+        let disposerStub = sinon.stub().resolves('barfoo');
+        let result = await new Confirmer(resolver => {
+          resolver.dispose(disposerStub);
+          resolver.confirm('foobar');
+        });
+        sinon.assert.match(result, sinon.match.has('value', 'foobar'));
+        sinon.assert.called(disposerStub);
+      });
+    });
+
+    describe('when confirmer rejects', function () {
+      it('facilitates disposing of resources', async function () {
+        let failedSpy = sinon.spy();
+        let disposerStub = sinon.stub().resolves('barfoo');
+        await new Confirmer(resolver => {
+          resolver.dispose(disposerStub);
+          resolver.error(new Error('Test Error'));
+        }).catch(failedSpy);
+        sinon.assert.called(disposerStub);
+        sinon.assert.calledWith(failedSpy, TEST_ERROR);
       });
     });
   });
