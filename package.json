@@ -18,6 +18,8 @@
     "url": "https://tritarget.org/"
   },
   "scripts": {
+    "preversion": "yarn run docs && git add README.md",
+    "docs": "jsdoc2md > README.md",
     "clean": "rm -r dist",
     "build": "babel src -d dist",
     "test": "npm run build && mocha",
@@ -31,7 +33,21 @@
     "babel-cli": "^6.24.1",
     "babel-plugin-transform-es2015-modules-umd": "^6.24.1",
     "babel-preset-es2015": "^6.24.1",
+    "jsdoc-to-markdown": "^4.0.1",
     "mocha": "^3.4.2",
     "sinon": "^2.4.1"
+  },
+  "jsdoc2md": {
+    "template": "docs/README.hbs",
+    "files": [
+      "src/confirmer.js"
+    ],
+    "partial": "docs/*.hbs",
+    "no-gfm": false,
+    "global-index-format": "none",
+    "param-list-format": "list",
+    "separators": true,
+    "heading-depth": 3,
+    "example-lang": "js"
   }
 }

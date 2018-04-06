@@ -1,0 +1,120 @@
+## Examples
+
+The following are example situations that I've run into and how this module can
+help reason about them.
+
+### Basic `window.confirm`
+
+In this example we will wrap the `window.confirm`. Although this is **not**
+asynchronous it does illustrate the API.
+
+```js
+new Confirmer(function (resolver) {
+  if (confirm('Whould you like to do this?')) {
+    resolver.confirm();
+  } else {
+    resolver.cancel();
+  }
+})
+  .onConfirmed(function () { console.log('Ok! let\'s crack on!'); })
+  .onCancelled(function () { console.log('Maybe next time then?'); })
+  .onDone(function () { console.log('Confirm completed') });
+```
+
+### jQuery dialog
+
+Here we show how to toggle a modal dialog with jQuery.
+
+```js
+new Confirmer(function (resolver) {
+  $('#modal-dialog button.yes').one('click', resolver.confirm);
+  $('#modal-dialog button.no').one('click', resolver.cancel);
+  $('#modal-dialog').show();
+})
+  .onConfirmed(function () { console.log('Ok! let\'s crack on!'); })
+  .onCancelled(function () { console.log('Maybe next time then?'); })
+  .onDone(function () {
+    $('#modal-dialog button').off('click');
+    $('#modal-dialog').hide();
+  });
+```
+
+### Password prompt
+
+Maybe the resolution of the confirmation needs more logic. For example asking
+for a password.
+
+```js
+new Confirmer(function (resolver) {
+  function checkPassword() {
+    var passwd = $('#password-dialog input.passord').val();
+    if (passwd === 'password') {
+      resolver.confirm(123);
+    } else {
+      resolver.reject('incorrect password');
+    }
+  }
+  $('#password-dialog button.ok').one('click', checkPassword);
+  $('#password-dialog button.cancel').one('click', resolver.cancel);
+  $('#password-dialog').show();
+})
+  .onConfirmed(function (userID) {
+    console.log('User ' + userID + ', you may proceed.');
+  })
+  .onRejected(function (message) {
+    console.log('Access denied: ' + message);
+  })
+  .onDone(function () {
+    $('#password-dialog input.passord').val('');
+    $('#modal-dialog button').off('click');
+    $('#password-dialog').hide();
+  });
+```
+
+## Auto closing message box
+
+Here is an example of a message box that auto closes after 5 seconds.
+
+Notice that you can call the resolver functions multiple times and only the
+first one wins.
+
+```js
+new Confirmer(function (resolver) {
+  setTimeout(resolver.cancel, 5000);
+  $('#modal-dialog button.ok').one('click', resolver.confirm);
+  $('#modal-dialog').show();
+}).onDone(function () {
+  $('#modal-dialog button').off('click');
+  $('#modal-dialog').hide();
+});
+```
+
+## Vanilla DOM Events (using the dispose function)
+
+Because vanilla DOM events are a common area for memory leaks the expectation
+is that when you `addEventListener` you have a corresponding
+`removeEventListener`. Unfortunately this requires a reference to the event
+handler function. This is typically accomplished using named functions.
+However, that also adds scope problems and more boilerplate. Some attempt to
+use `arguments.callee`, some use `var _this = this`, and some use outer scoped
+variables. This example takes advantage of the `dispose` API to make disposing
+resources in a cleaner (read prettier) way.
+
+```js
+let dialog = document.getElementById('modal-dialog');
+let buttonYes = dialog.querySelector('button.yes');
+let buttonNo = dialog.querySelector('button.no');
+
+new Confirmer(function (resolver) {
+  buttonYes.addEventListener('click', resolver.confirm);
+  buttonNo.addEventListener('click', resolver.cancel);
+  resolver.dispose(function () {
+    buttonYes.removeEventListener('click', resolver.confirm);
+    buttonNo.removeEventListener('click', resolver.cancel);
+  });
+  dialog.style.display = 'block';
+})
+  .onConfirmed(function () { console.log('Ok! let\'s crack on!'); })
+  .onCancelled(function () { console.log('Maybe next time then?'); })
+  .onDone(function () { dialog.style.display = 'none'; });
+```

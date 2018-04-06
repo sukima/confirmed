@@ -1,0 +1,43 @@
+## Usage
+
+Much like the `Promise` API the constructor for the `Confirmer` takes
+a function. That function is passed a resolver object which has four functions
+on it that you can use to *fulfill* the `Confirmer`.
+
+```js
+new Confirmer(function (resolver) {
+  // Affirm confirmation
+  resolver.confirm();
+  // Reject confirmation
+  resolver.reject();
+  // Cancel confirmation
+  resolver.cancel();
+  // Reject with an Error
+  resolver.error(new Error());
+  // Register a disposer function to clean up resources
+  // Same as onDone but in the initializer function closure
+  resolver.dispose(function () { … });
+})
+```
+
+Each state can take an optional value. The `Confirmer` is a wrapper around
+a `Promise` and can be treated as a promise. For example to capture any errors
+or exceptions you may trigger you would use the `catch()` function.
+
+```js
+new Confirmer(function (resolver) { … })
+  .catch(function (reason) { console.error(reason); });
+```
+
+The `then()` function will be passed the underlying data object:
+
+```js
+new Confirmer(function (resolver) { … })
+  .then(function (result) {
+    console.log(result.reason);
+    console.log(result.value);
+  });
+```
+
+The `reason` being one of `rejected`, `confirmed`, or `cancelled`. And the
+`value` is the value passed to one of the resolver functions.
