@@ -82,31 +82,221 @@ new Confirmer(function (resolver) { … })
 The `reason` being one of `rejected`, `confirmed`, or `cancelled`. And the
 `value` is the value passed to one of the resolver functions.
 
-The following methods are chainable:
+## API
 
-#### `onCanceled`
+<a name="Confirmer"></a>
 
-Is called when `resolver.cancel()` is triggered. Used to denote that the
-confirmation was cancelled and perhaps should do nothing.
+### Confirmer
+The main class is referred to as `Confirmer` though the packaging is called
+`confirmed` This is simply to prevent an NPM name collision but the proper
+term for this utility is `Confirmer` and is referenced as such in this
+documentation.
 
-#### `onConfirmed`
+**Kind**: global class  
 
-Is called when `resolver.confirm()` is triggered. Used to denote that the user
-has confirmed in some way. ("OK" button, correct login credentials, etc.)
+* [Confirmer](#Confirmer)
+    * [new Confirmer(initFn)](#new_Confirmer_new)
+    * _instance_
+        * [.onConfirmed(fn)](#Confirmer+onConfirmed) ⇒ [<code>Confirmer</code>](#Confirmer)
+        * [.onRejected(fn)](#Confirmer+onRejected) ⇒ [<code>Confirmer</code>](#Confirmer)
+        * [.onCancelled(fn)](#Confirmer+onCancelled) ⇒ [<code>Confirmer</code>](#Confirmer)
+        * ~~[.onCanceled()](#Confirmer+onCanceled)~~
+        * [.onDone(fn)](#Confirmer+onDone) ⇒ [<code>Confirmer</code>](#Confirmer)
+        * [.then(onFulfilled, onRejected)](#Confirmer+then) ⇒ <code>Promise</code>
+        * [.catch(onRejected)](#Confirmer+catch) ⇒ <code>Promise</code>
+    * _static_
+        * [.resolve(result)](#Confirmer.resolve) ⇒ [<code>Confirmer</code>](#Confirmer)
 
-#### `onRejected`
 
-Is called when `resolver.rejected()` is triggered. Used to denote that the user
-has performed an action that denied the confirmation. ("No" button, bad
-password, etc.)
+* * *
 
-#### `onDone`
+<a name="new_Confirmer_new"></a>
 
-Is called when **any** of the resolver functions are triggered. This is used for
-clean up like closing the dialog and removing stale event handlers. This is also
-called if the `resolver.error` is triggered or something throws an exception in
-the initialization function (which can be captued by the `catch()` function just
-like a promise).
+#### new Confirmer(initFn)
+Much like the `Promise` API the constructor for the `Confirmer` takes a
+function. That function is passed a resolver object which has three
+functions on it that you can use to *fulfill* the `Confirmer`, one
+function to register an error, and a disposer function to clean up
+resources is needed. Each fulfillment function can take an optional value.
+
+#### Example
+```js
+new Confirmer(function (resolver) {
+  // Affirm confirmation
+  resolver.confirm();
+  // Reject confirmation
+  resolver.reject();
+  // Cancel confirmation
+  resolver.cancel();
+  // Reject with an Error
+  resolver.error(new Error());
+  // Register a disposer function to clean up resources
+  // Same as onDone but in the initializer function closure
+  resolver.dispose(function () { … });
+});
+```
+
+**Params**
+
+- initFn <code>function</code> - The initializer function
+
+
+* * *
+
+<a name="Confirmer+onConfirmed"></a>
+
+#### confirmer.onConfirmed(fn) ⇒ [<code>Confirmer</code>](#Confirmer)
+Register callback that is called when `resolver.confirm()` is triggered.
+Used to denote that the user has confirmed in some way. ("OK" button,
+correct login credentials, etc.)
+
+If the callback returns a new Confirmer the result will be that new
+Confirmer allowing the callback to change the fulfillment reason as part
+of the chaining. If it is simply a scalar value the fulfillment reason
+with remain the same but the value will change.
+
+**Kind**: instance method of [<code>Confirmer</code>](#Confirmer)  
+**Returns**: [<code>Confirmer</code>](#Confirmer) - A new Confirmer instance for chaining  
+**Params**
+
+- fn <code>function</code> - callback function called when Confirmer is confirmed
+
+
+* * *
+
+<a name="Confirmer+onRejected"></a>
+
+#### confirmer.onRejected(fn) ⇒ [<code>Confirmer</code>](#Confirmer)
+Register callback that is called when `resolver.rejected()` is triggered.
+Used to denote that the user has performed an action that denied the
+confirmation. ("No" button, bad password, etc.)
+
+If the callback returns a new Confirmer the result will be that new
+Confirmer allowing the callback to change the fulfillment reason as part
+of the chaining. If it is simply a scalar value the fulfillment reason
+with remain the same but the value will change.
+
+**Kind**: instance method of [<code>Confirmer</code>](#Confirmer)  
+**Returns**: [<code>Confirmer</code>](#Confirmer) - A new Confirmer instance for chaining  
+**Params**
+
+- fn <code>function</code> - callback function called when Confirmer is rejected
+
+
+* * *
+
+<a name="Confirmer+onCancelled"></a>
+
+#### confirmer.onCancelled(fn) ⇒ [<code>Confirmer</code>](#Confirmer)
+Register callback that is called when `resolver.cancel()` is triggered.
+Used to denote that the confirmation was cancelled and perhaps should do
+nothing.
+
+If the callback returns a new Confirmer the result will be that new
+Confirmer allowing the callback to change the fulfillment reason as part
+of the chaining. If it is simply a scalar value the fulfillment reason
+with remain the same but the value will change.
+
+**Kind**: instance method of [<code>Confirmer</code>](#Confirmer)  
+**Returns**: [<code>Confirmer</code>](#Confirmer) - A new Confirmer instance for chaining  
+**Params**
+
+- fn <code>function</code> - callback function called when Confirmer is cancelled
+
+
+* * *
+
+<a name="Confirmer+onCanceled"></a>
+
+#### ~~confirmer.onCanceled()~~
+***Deprecated***
+
+Spelling error; use `onCancelled`.
+
+**Kind**: instance method of [<code>Confirmer</code>](#Confirmer)  
+
+* * *
+
+<a name="Confirmer+onDone"></a>
+
+#### confirmer.onDone(fn) ⇒ [<code>Confirmer</code>](#Confirmer)
+Register a callback that is called when any of the resolver functions are
+triggered. This is used for clean up like closing the dialog and removing
+stale event handlers. This is also called if the `resolver.error()` is
+triggered or something throws an exception in the initialization function
+(which can be captured by the `catch()` function just like a promise).
+
+**Kind**: instance method of [<code>Confirmer</code>](#Confirmer)  
+**Returns**: [<code>Confirmer</code>](#Confirmer) - A new Confirmer instance for chaining  
+**Params**
+
+- fn <code>function</code> - callback function called when Confirmer is resolved/errored
+
+
+* * *
+
+<a name="Confirmer+then"></a>
+
+#### confirmer.then(onFulfilled, onRejected) ⇒ <code>Promise</code>
+Cast to a `Promise`. Will proxy to the internal promise `then()` method.
+Since the result is a Promise it will not chain as Confirmer after this.
+
+The result of a fulfilled promise is an Object with `reason` and `value`
+properties. See [resolve](#Confirmer.resolve) for more details of this
+internal object.
+
+**Kind**: instance method of [<code>Confirmer</code>](#Confirmer)  
+**Params**
+
+- onFulfilled <code>function</code> - callback when internal promise is fulfilled
+- onRejected <code>function</code> - callback when internal promise is rejected
+
+
+* * *
+
+<a name="Confirmer+catch"></a>
+
+#### confirmer.catch(onRejected) ⇒ <code>Promise</code>
+Cast to a `Promise`. Will proxy to the internal promise `catch()` method.
+Since the result is a Promise it will not chain as Confirmer after this.
+
+**Kind**: instance method of [<code>Confirmer</code>](#Confirmer)  
+**Params**
+
+- onRejected <code>function</code> - callback when internal promise is rejected
+
+
+* * *
+
+<a name="Confirmer.resolve"></a>
+
+#### Confirmer.resolve(result) ⇒ [<code>Confirmer</code>](#Confirmer)
+Low level utility to construct a new `Confirmer` with a fulfillment. It is
+designed to easily wrap the internal promise/resolution in a `Confirmer`
+object.
+
+* if a `Confirmer` is passed it will be returned
+* if a `Promise` is passed it will become the internal promise of a new Confirmer
+* if an `Object` is passed it will become the fulfilled value of the internal promise of a new Confirmer
+
+**Warning:** Any other type will cause the Confirmer to reject with an
+error.
+
+The internal fulfillment value (either directly of as the result of a
+promise resolution) must be an Object with these properties:
+
+* reason `String` - the reason for the fulfillment. One of "confirmed", "cancelled", or "rejected".
+* value `Any` - the value associated (optional)
+
+**Kind**: static method of [<code>Confirmer</code>](#Confirmer)  
+**Returns**: [<code>Confirmer</code>](#Confirmer) - a new Confirmer that has/will be resolved to the result  
+**Params**
+
+- result [<code>Confirmer</code>](#Confirmer) | <code>Promise</code> | <code>Object</code> - the result the new Confirmer should resolve to
+
+
+* * *
+
 
 ## Examples
 
