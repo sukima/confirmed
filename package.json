@@ -1,6 +1,6 @@
 {
   "name": "confirmed",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "Framework agnostic asynchronous confirmation module",
   "license": "MIT",
   "main": "index.js",
