@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const Confirmer = require('../dist/confirmer').default;
+const { default: Confirmer, CONFIRMED } = require('../dist/confirmer');
 
 const TEST_ERROR = sinon.match.instanceOf(Error)
   .and(sinon.match.has('message', 'Test Error'));
@@ -42,6 +42,16 @@ describe('Confirmer', function () {
         sinon.assert.calledWith(onCancelledMutateStub, 'test-payload');
         sinon.assert.calledWith(this.onCancelledStub, 'mutated-payload');
       });
+
+      it('mutates the reason when a new Confirmer is returned', async function () {
+        let mutatedConfirmer = new Confirmer(({confirm}) => confirm('mutated-payload'));
+        let onCancelledMutateStub = sinon.stub().returns(mutatedConfirmer);
+        await new Confirmer(resolver => resolver.cancel('test-payload'))
+          .onCancelled(onCancelledMutateStub)
+          .onConfirmed(this.onConfirmedStub);
+        sinon.assert.calledWith(onCancelledMutateStub, 'test-payload');
+        sinon.assert.calledWith(this.onConfirmedStub, 'mutated-payload');
+      });
     });
   });
 
@@ -74,6 +84,16 @@ describe('Confirmer', function () {
           .onConfirmed(this.onConfirmedStub);
         sinon.assert.calledWith(onConfirmedMutateStub, 'test-payload');
         sinon.assert.calledWith(this.onConfirmedStub, 'mutated-payload');
+      });
+
+      it('mutates the reason when a new Confirmer is returned', async function () {
+        let mutatedConfirmer = new Confirmer(({cancel}) => cancel('mutated-payload'));
+        let onConfirmedMutateStub = sinon.stub().returns(mutatedConfirmer);
+        await new Confirmer(resolver => resolver.confirm('test-payload'))
+          .onConfirmed(onConfirmedMutateStub)
+          .onCancelled(this.onCancelledStub);
+        sinon.assert.calledWith(onConfirmedMutateStub, 'test-payload');
+        sinon.assert.calledWith(this.onCancelledStub, 'mutated-payload');
       });
     });
   });
@@ -108,6 +128,16 @@ describe('Confirmer', function () {
         sinon.assert.calledWith(onRejectedMutateStub, 'test-payload');
         sinon.assert.calledWith(this.onRejectedStub, 'mutated-payload');
       });
+
+      it('mutates the reason when a new Confirmer is returned', async function () {
+        let mutatedConfirmer = new Confirmer(({confirm}) => confirm('mutated-payload'));
+        let onRejectedMutateStub = sinon.stub().returns(mutatedConfirmer);
+        await new Confirmer(resolver => resolver.reject('test-payload'))
+          .onRejected(onRejectedMutateStub)
+          .onConfirmed(this.onConfirmedStub);
+        sinon.assert.calledWith(onRejectedMutateStub, 'test-payload');
+        sinon.assert.calledWith(this.onConfirmedStub, 'mutated-payload');
+      });
     });
   });
 
@@ -135,6 +165,44 @@ describe('Confirmer', function () {
         sinon.assert.called(disposerStub);
         sinon.assert.calledWith(failedSpy, TEST_ERROR);
       });
+    });
+  });
+
+  describe('#resolve', function () {
+    it('returns the same Confirmer when given a Confirmer', function () {
+      let subject = new Confirmer(() => {});
+      let result = Confirmer.resolve(subject);
+      sinon.assert.match(result, subject);
+    });
+
+    it('returns a new Confirmer when passed a promise', function () {
+      let subject = Confirmer.resolve(Promise.resolve({reason: CONFIRMED, value: 'foo'}));
+      sinon.assert.match(subject, sinon.match.instanceOf(Confirmer));
+    });
+
+    it('returns a new Confirmer when passed an internal payload', async function () {
+      let subject = Confirmer.resolve({reason: CONFIRMED, value: 'foo'});
+      let result = await subject;
+      sinon.assert.match(subject, sinon.match.instanceOf(Confirmer));
+      sinon.assert.match(result, {reason: CONFIRMED, value: 'foo'});
+    });
+
+    it('rejects when passed scalar values', async function () {
+      try {
+        await Confirmer.resolve('bogus');
+        sinon.assert.fail('expected Confirmer to be rejected');
+      } catch (error) {
+        sinon.assert.pass();
+      }
+    });
+
+    it('rejects when passed an internal payload with a unknown reason', async function () {
+      try {
+        await Confirmer.resolve({reason: 'unknown-reason', value: 'foo'});
+        sinon.assert.fail('expected Confirmer to be rejected');
+      } catch (error) {
+        sinon.assert.pass();
+      }
     });
   });
 });

@@ -20,33 +20,36 @@ export default class Confirmer {
   }
 
   onConfirmed(fn) {
-    this._promise = this._promise.then(result => {
-      if (result.reason === CONFIRMED) {
-        result.value = fn(result.value);
-      }
-      return result
+    let promise = this._promise.then(result => {
+      if (result.reason !== CONFIRMED) { return result; }
+      let newValue = fn(result.value);
+      return newValue instanceof Confirmer
+        ? newValue._promise
+        : {reason: CONFIRMED, value: newValue};
     });
-    return this;
+    return Confirmer.resolve(promise);
   }
 
   onRejected(fn) {
-    this._promise = this._promise.then(result => {
-      if (result.reason === REJECTED) {
-        result.value = fn(result.value);
-      }
-      return result
+    let promise = this._promise.then(result => {
+      if (result.reason !== REJECTED) { return result; }
+      let newValue = fn(result.value);
+      return newValue instanceof Confirmer
+        ? newValue._promise
+        : {reason: REJECTED, value: newValue};
     });
-    return this;
+    return Confirmer.resolve(promise);
   }
 
   onCancelled(fn) {
-    this._promise = this._promise.then(result => {
-      if (result.reason === CANCELLED) {
-        result.value = fn(result.value);
-      }
-      return result
+    let promise = this._promise.then(result => {
+      if (result.reason !== CANCELLED) { return result; }
+      let newValue = fn(result.value);
+      return newValue instanceof Confirmer
+        ? newValue._promise
+        : {reason: CANCELLED, value: newValue};
     });
-    return this;
+    return Confirmer.resolve(promise);
   }
 
   onCanceled(fn) {
@@ -54,17 +57,11 @@ export default class Confirmer {
   }
 
   onDone(fn) {
-    this._promise = this._promise.then(
-      result => {
-        fn();
-        return result;
-      },
-      error => {
-        fn();
-        throw error;
-      }
+    let promise = this._promise.then(
+      result => Promise.resolve(fn()).then(() => result),
+      error => Promise.resolve(fn()).then(() => { throw error; })
     );
-    return this;
+    return Confirmer.resolve(promise);
   }
 
   then() {
@@ -73,5 +70,18 @@ export default class Confirmer {
 
   catch(fn) {
     return this._promise.then(null, fn);
+  }
+
+  static resolve(result) {
+    if (result instanceof Confirmer) { return result; }
+    let newConfirmer = new Confirmer(() => {});
+    newConfirmer._promise = Promise.resolve(result).then(result => {
+      let reason = result && result.reason;
+      if (![CONFIRMED, CANCELLED, REJECTED].includes(reason)) {
+        throw new Error(`Unknown resolution reason ${reason}`);
+      }
+      return result;
+    });
+    return newConfirmer;
   }
 }
