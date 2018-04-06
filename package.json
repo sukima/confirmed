@@ -18,12 +18,12 @@
     "url": "https://tritarget.org/"
   },
   "scripts": {
-    "preversion": "yarn run docs && git add README.md",
+    "preversion": "npm run docs && git add README.md",
     "docs": "jsdoc2md > README.md",
     "clean": "rm -r dist",
-    "build": "babel src -d dist",
+    "build": "mkdir -p dist && (node bin/header; babel src/confirmer.js) > dist/confirmer.js",
     "test": "npm run build && mocha",
-    "prepublish": "npm run build"
+    "prepare": "npm run build"
   },
   "files": [
     "dist",
@@ -49,5 +49,6 @@
     "separators": true,
     "heading-depth": 3,
     "example-lang": "js"
-  }
+  },
+  "dependencies": {}
 }
