@@ -68,9 +68,10 @@ class Confirmer {
     let promise = this._promise.then(result => {
       if (result.reason !== CONFIRMED) { return result; }
       let newValue = fn(result.value);
-      return newValue instanceof Confirmer
-        ? newValue._promise
-        : {reason: CONFIRMED, value: newValue};
+      if (newValue instanceof Confirmer) { return newValue._promise; }
+      return Promise.resolve(newValue).then(value => {
+        return { reason: CONFIRMED, value };
+      });
     });
     return Confirmer.resolve(promise);
   }
@@ -92,9 +93,10 @@ class Confirmer {
     let promise = this._promise.then(result => {
       if (result.reason !== REJECTED) { return result; }
       let newValue = fn(result.value);
-      return newValue instanceof Confirmer
-        ? newValue._promise
-        : {reason: REJECTED, value: newValue};
+      if (newValue instanceof Confirmer) { return newValue._promise; }
+      return Promise.resolve(newValue).then(value => {
+        return { reason: REJECTED, value };
+      });
     });
     return Confirmer.resolve(promise);
   }
@@ -116,9 +118,10 @@ class Confirmer {
     let promise = this._promise.then(result => {
       if (result.reason !== CANCELLED) { return result; }
       let newValue = fn(result.value);
-      return newValue instanceof Confirmer
-        ? newValue._promise
-        : {reason: CANCELLED, value: newValue};
+      if (newValue instanceof Confirmer) { return newValue._promise; }
+      return Promise.resolve(newValue).then(value => {
+        return { reason: CANCELLED, value };
+      });
     });
     return Confirmer.resolve(promise);
   }

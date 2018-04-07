@@ -43,6 +43,16 @@ describe('Confirmer', function () {
         sinon.assert.calledWith(this.onCancelledStub, 'mutated-payload');
       });
 
+      it('mutates the value ehwn a promise is returned', async function () {
+        let onCancelledMutateStub = sinon.stub()
+          .returns(Promise.resolve('mutated-payload'));
+        await new Confirmer(resolver => resolver.cancel('test-payload'))
+          .onCancelled(onCancelledMutateStub)
+          .onCancelled(this.onCancelledStub);
+        sinon.assert.calledWith(onCancelledMutateStub, 'test-payload');
+        sinon.assert.calledWith(this.onCancelledStub, 'mutated-payload');
+      });
+
       it('mutates the reason when a new Confirmer is returned', async function () {
         let mutatedConfirmer = new Confirmer(({confirm}) => confirm('mutated-payload'));
         let onCancelledMutateStub = sinon.stub().returns(mutatedConfirmer);
@@ -86,6 +96,16 @@ describe('Confirmer', function () {
         sinon.assert.calledWith(this.onConfirmedStub, 'mutated-payload');
       });
 
+      it('mutates the value when a promise is returned', async function () {
+        let onConfirmedMutateStub = sinon.stub()
+          .returns(Promise.resolve('mutated-payload'));
+        await new Confirmer(resolver => resolver.confirm('test-payload'))
+          .onConfirmed(onConfirmedMutateStub)
+          .onConfirmed(this.onConfirmedStub);
+        sinon.assert.calledWith(onConfirmedMutateStub, 'test-payload');
+        sinon.assert.calledWith(this.onConfirmedStub, 'mutated-payload');
+      });
+
       it('mutates the reason when a new Confirmer is returned', async function () {
         let mutatedConfirmer = new Confirmer(({cancel}) => cancel('mutated-payload'));
         let onConfirmedMutateStub = sinon.stub().returns(mutatedConfirmer);
@@ -122,6 +142,16 @@ describe('Confirmer', function () {
 
       it('mutates the value', async function () {
         let onRejectedMutateStub = sinon.stub().returns('mutated-payload');
+        await new Confirmer(resolver => resolver.reject('test-payload'))
+          .onRejected(onRejectedMutateStub)
+          .onRejected(this.onRejectedStub);
+        sinon.assert.calledWith(onRejectedMutateStub, 'test-payload');
+        sinon.assert.calledWith(this.onRejectedStub, 'mutated-payload');
+      });
+
+      it('mutates the value when a promise is returned', async function () {
+        let onRejectedMutateStub = sinon.stub()
+          .returns(Promise.resolve('mutated-payload'));
         await new Confirmer(resolver => resolver.reject('test-payload'))
           .onRejected(onRejectedMutateStub)
           .onRejected(this.onRejectedStub);
