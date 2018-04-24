@@ -37,6 +37,9 @@ class Confirmer {
    */
   constructor(initFn) {
     let disposer = () => {};
+    if (!Confirmer.Promise) {
+      throw new Error('You must provide a Promise implementation by assigning Confirmer.Promise');
+    }
     this._promise = new Confirmer.Promise((resolve, reject) => {
       initFn({
         error: reject,
@@ -223,6 +226,8 @@ class Confirmer {
  * @default Promise
  * @private
  */
-Confirmer.Promise = Promise;
+if (typeof(Promise) !== 'undefined' && Promise != null) {
+  Confirmer.Promise = Promise;
+}
 
 export default Confirmer;
