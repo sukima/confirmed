@@ -3,7 +3,7 @@
   "version": "2.2.0",
   "description": "Framework agnostic asynchronous confirmation module",
   "license": "MIT",
-  "main": "index.js",
+  "main": "dist/confirmer.js",
   "homepage": "https://github.com/sukima/confirmed",
   "repository": {
     "type": "git",
