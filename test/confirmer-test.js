@@ -9,7 +9,7 @@ describe('Confirmer', function () {
     this.onCancelledStub = sinon.stub().returnsArg(0);
     this.onConfirmedStub = sinon.stub().returnsArg(0);
     this.onRejectedStub = sinon.stub().returnsArg(0);
-    this.onDoneStub = sinon.stub().returnsArg(0);
+    this.onDoneStub = sinon.stub();
   });
 
   describe('when confirmation is cancelled', function () {

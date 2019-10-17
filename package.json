@@ -34,8 +34,8 @@
     "@babel/core": "^7.6.4",
     "@babel/preset-env": "^7.6.3",
     "jsdoc-to-markdown": "^5.0.2",
-    "mocha": "^3.4.2",
-    "sinon": "^2.4.1"
+    "mocha": "^6.2.1",
+    "sinon": "^7.5.0"
   },
   "jsdoc2md": {
     "template": "docs/README.hbs",
