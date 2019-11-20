@@ -2,6 +2,16 @@ export const REJECTED = 'rejected';
 export const CONFIRMED = 'confirmed';
 export const CANCELLED = 'cancelled';
 
+function resolutionFor(reason, fn, promise) {
+  return Confirmer.resolve(promise.then(result => {
+    if (result.reason !== reason) { return result; }
+    let newValue = fn(result.value);
+    if (newValue instanceof Confirmer) { return newValue._promise; }
+    return Confirmer.Promise.resolve(newValue)
+      .then(value => ({ reason, value }));
+  }));
+}
+
 /**
  * The main class is referred to as `Confirmer` though the packaging is called
  * `confirmed` This is simply to prevent an NPM name collision but the proper
@@ -68,15 +78,7 @@ class Confirmer {
    * @return {Confirmer} A new Confirmer instance for chaining
    */
   onConfirmed(fn) {
-    let promise = this._promise.then(result => {
-      if (result.reason !== CONFIRMED) { return result; }
-      let newValue = fn(result.value);
-      if (newValue instanceof Confirmer) { return newValue._promise; }
-      return Confirmer.Promise.resolve(newValue).then(value => {
-        return { reason: CONFIRMED, value };
-      });
-    });
-    return Confirmer.resolve(promise);
+    return resolutionFor(CONFIRMED, fn, this._promise);
   }
 
   /**
@@ -93,15 +95,7 @@ class Confirmer {
    * @return {Confirmer} A new Confirmer instance for chaining
    */
   onRejected(fn) {
-    let promise = this._promise.then(result => {
-      if (result.reason !== REJECTED) { return result; }
-      let newValue = fn(result.value);
-      if (newValue instanceof Confirmer) { return newValue._promise; }
-      return Confirmer.Promise.resolve(newValue).then(value => {
-        return { reason: REJECTED, value };
-      });
-    });
-    return Confirmer.resolve(promise);
+    return resolutionFor(REJECTED, fn, this._promise);
   }
 
   /**
@@ -118,15 +112,7 @@ class Confirmer {
    * @return {Confirmer} A new Confirmer instance for chaining
    */
   onCancelled(fn) {
-    let promise = this._promise.then(result => {
-      if (result.reason !== CANCELLED) { return result; }
-      let newValue = fn(result.value);
-      if (newValue instanceof Confirmer) { return newValue._promise; }
-      return Confirmer.Promise.resolve(newValue).then(value => {
-        return { reason: CANCELLED, value };
-      });
-    });
-    return Confirmer.resolve(promise);
+    return resolutionFor(CANCELLED, fn, this._promise);
   }
 
   /**
