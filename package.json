@@ -1,6 +1,6 @@
 {
   "name": "confirmed",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "Framework agnostic asynchronous confirmation module",
   "license": "MIT",
   "main": "dist/confirmer.js",
