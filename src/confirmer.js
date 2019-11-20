@@ -205,7 +205,7 @@ class Confirmer {
    */
   static resolve(result) {
     if (result instanceof Confirmer) { return result; }
-    let newConfirmer = new Confirmer(() => {});
+    let newConfirmer = Object.create(Confirmer.prototype);
     newConfirmer._promise = Confirmer.Promise.resolve(result).then(result => {
       let reason = result && result.reason;
       if (![CONFIRMED, CANCELLED, REJECTED].includes(reason)) {
